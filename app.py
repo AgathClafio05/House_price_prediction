@@ -1,134 +1,115 @@
-
-from pathlib import Path
-
-import joblib
-import pandas as pd
 import streamlit as st
-
+import pandas as pd
+import joblib
+from pathlib import Path
 
 # Project paths
 BASE_DIR = Path(__file__).resolve().parent
-
-DATA_PATH = BASE_DIR / "data" / "bengaluru_house_prices_cleaned.csv"
 MODEL_PATH = BASE_DIR / "models" / "house_price_model.joblib"
+DATA_PATH = BASE_DIR / "data" / "bengaluru_house_prices_cleaned.csv"
 
-
-# Page settings
+# Page configuration
 st.set_page_config(
     page_title="Bengaluru House Price Prediction",
     page_icon="🏠",
     layout="centered"
 )
 
-st.title("🏠 Bengaluru House Price Prediction")
-st.write("Enter the house details to estimate its price in Bengaluru.")
-
+st.title("Bengaluru House Price Prediction")
+st.write("Enter the property details to estimate its price.")
 
 # Load model and dataset
 @st.cache_resource
 def load_model():
     return joblib.load(MODEL_PATH)
 
-
 @st.cache_data
 def load_data():
     return pd.read_csv(DATA_PATH)
 
-
 try:
     model = load_model()
     df = load_data()
-except FileNotFoundError as error:
-    st.error(f"Required file not found: {error.filename}")
+except Exception as e:
+    st.error(f"Could not load the model or dataset: {e}")
     st.stop()
 
-
-# Prepare dropdown options
-area_types = sorted(
-    df["area_type"].dropna().astype(str).unique().tolist()
+# Input fields
+area_type = st.selectbox(
+    "Area Type",
+    sorted(df["area_type"].dropna().unique())
 )
 
-locations = sorted(
-    df["location"].dropna().astype(str).unique().tolist()
+availability = st.selectbox(
+    "Availability",
+    sorted(df["availability"].dropna().unique())
 )
 
+location = st.selectbox(
+    "Location",
+    sorted(df["location"].dropna().unique())
+)
 
-# House details
-st.subheader("Enter House Details")
+total_sqft = st.number_input(
+    "Total Square Feet",
+    min_value=1.0,
+    value=1200.0,
+    step=50.0
+)
 
-with st.form("house_details_form"):
+bhk = st.number_input(
+    "Number of Bedrooms (BHK)",
+    min_value=1,
+    max_value=20,
+    value=2,
+    step=1
+)
 
-    area_type = st.selectbox(
-        "Area Type",
-        area_types
-    )
+bath = st.number_input(
+    "Number of Bathrooms",
+    min_value=1,
+    max_value=20,
+    value=2,
+    step=1
+)
 
-    location = st.selectbox(
-        "Location",
-        locations
-    )
+balcony = st.number_input(
+    "Number of Balconies",
+    min_value=0,
+    max_value=10,
+    value=1,
+    step=1
+)
 
-    total_sqft = st.number_input(
-        "Total Square Feet",
-        min_value=1.0,
-        value=1200.0,
-        step=100.0
-    )
-
-    bhk = st.number_input(
-        "Bedrooms (BHK)",
-        min_value=1,
-        max_value=20,
-        value=2,
-        step=1
-    )
-
-    bath = st.number_input(
-        "Bathrooms",
-        min_value=1,
-        max_value=20,
-        value=2,
-        step=1
-    )
-
-    balcony = st.number_input(
-        "Balconies",
-        min_value=0,
-        max_value=10,
-        value=1,
-        step=1
-    )
-
-    submitted = st.form_submit_button("Predict House Price")
-
-
-# Predict price
-if submitted:
-
+# Prediction
+if st.button("Predict House Price", type="primary"):
     input_data = pd.DataFrame([{
+        "area_type": area_type,
+        "availability": availability,
+        "location": location,
         "total_sqft": total_sqft,
         "bath": bath,
         "balcony": balcony,
-        "bhk": bhk,
-        "location": location,
-        "area_type": area_type
+        "bhk": bhk
     }])
 
     try:
-        predicted_price = float(model.predict(input_data)[0])
+        prediction = model.predict(input_data)[0]
 
-        if not pd.notna(predicted_price):
-            st.error("The model returned an invalid prediction.")
+        if prediction <= 0:
+            st.warning(
+                f"The model returned ₹{prediction:.2f} lakhs. "
+                "This is not a valid positive house-price estimate."
+            )
         else:
-            st.success("Estimated House Price")
+            st.success("Prediction completed.")
             st.metric(
-                label="Predicted Price",
-                value=f"₹ {predicted_price:.2f} Lakhs"
+                "Estimated House Price",
+                f"₹{prediction:.2f} lakhs"
             )
-
             st.caption(
-                "This is a machine-learning estimate, not a guaranteed market price."
+                "This is a model estimate, not a guaranteed market price."
             )
 
-    except (ValueError, KeyError) as error:
-        st.error(f"Unable to predict the price: {error}")
+    except Exception as e:
+        st.error(f"Prediction failed: {e}")

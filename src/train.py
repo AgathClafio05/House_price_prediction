@@ -36,13 +36,13 @@ numeric_features = [
 
 categorical_features = [
     "location",
-    "area_type"
+    "area_type",
+    "availability"
 ]
 
 all_features = numeric_features + categorical_features
 
-# Select only the required features.
-# Availability will not be used.
+# Select required features
 X_train = X_train[all_features].copy()
 
 
