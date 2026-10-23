@@ -26,8 +26,7 @@ numeric_features = [
 
 categorical_features = [
     "location",
-    "area_type",
-    "availability"
+    "area_type"
 ]
 
 X_train = X_train[numeric_features + categorical_features]
