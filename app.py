@@ -40,11 +40,6 @@ area_type = st.selectbox(
     sorted(df["area_type"].dropna().unique())
 )
 
-availability = st.selectbox(
-    "Availability",
-    sorted(df["availability"].dropna().unique())
-)
-
 location = st.selectbox(
     "Location",
     sorted(df["location"].dropna().unique())
@@ -85,7 +80,6 @@ balcony = st.number_input(
 if st.button("Predict House Price", type="primary"):
     input_data = pd.DataFrame([{
         "area_type": area_type,
-        "availability": availability,
         "location": location,
         "total_sqft": total_sqft,
         "bath": bath,
