@@ -208,7 +208,7 @@ Before deployment:
 
 Machine Learning | Data Analysis | Python
 
-GitHub: <YOUR_GITHUB_PROFILE_URL>
+GitHub: https://github.com/AgathClafio05/House_price_prediction
 
 ---
 
