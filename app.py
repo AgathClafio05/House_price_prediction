@@ -6,7 +6,7 @@ from pathlib import Path
 # Project paths
 BASE_DIR = Path(__file__).resolve().parent
 MODEL_PATH = BASE_DIR / "models" / "house_price_model.joblib"
-DATA_PATH = BASE_DIR / "data" / "bengaluru_house_prices_cleaned.csv"
+DATA_PATH = BASE_DIR / "Data" / "bengaluru_house_prices_cleaned.csv"
 
 # Page configuration
 st.set_page_config(
